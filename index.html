@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manyame RDC &mdash; Centralised Asset Register</title>
+    <meta
+      name="description"
+      content="Digital asset register for vehicles, furniture, and equipment: location, condition, custodianship, and audit exports."
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header" role="banner">
+      <div class="site-header__inner">
+        <div>
+          <h1>Manyame Rural District Council</h1>
+          <p>Centralised digital asset register &mdash; vehicles, furniture &amp; equipment</p>
+        </div>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <p class="message message--info no-print">
+        Data is stored in this browser (localStorage). Use <strong>Export JSON</strong> regularly for backups
+        and <strong>Export CSV</strong> for spreadsheets and audits. For production deployment, host this application
+        on a council server with a database and user accounts.
+      </p>
+
+      <section class="stats no-print" aria-label="Register summary">
+        <article class="stat-card">
+          <p class="stat-card__label">Total assets</p>
+          <p class="stat-card__value" id="stat-total">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-card__label">Vehicles</p>
+          <p class="stat-card__value" id="stat-vehicles">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-card__label">Furniture</p>
+          <p class="stat-card__value" id="stat-furniture">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-card__label">Equipment</p>
+          <p class="stat-card__value" id="stat-equipment">0</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-card__label">Fair / poor condition</p>
+          <p class="stat-card__value" id="stat-needs-attention">0</p>
+        </article>
+      </section>
+
+      <section class="panel no-print" aria-labelledby="form-title">
+        <div class="panel__head">
+          <h2 id="form-title">Register new asset</h2>
+        </div>
+        <div class="panel__body">
+          <form id="asset-form" novalidate>
+            <div class="form-grid">
+              <div class="field-group">
+                <label for="f_assetTag">Asset tag / inventory number</label>
+                <input type="text" id="f_assetTag" name="assetTag" autocomplete="off" placeholder="e.g. MRDC-INV-2024-0142" />
+              </div>
+              <div class="field-group">
+                <label for="f_name">Asset name <span aria-hidden="true">*</span></label>
+                <input type="text" id="f_name" name="name" required autocomplete="off" />
+              </div>
+              <div class="field-group">
+                <label for="f_category">Category <span aria-hidden="true">*</span></label>
+                <select id="f_category" name="category" required>
+                  <option value="Vehicle">Vehicle</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Equipment" selected>Equipment</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="f_location">Physical location <span aria-hidden="true">*</span></label>
+                <input type="text" id="f_location" name="location" required autocomplete="off" placeholder="Building, room, or site" />
+              </div>
+              <div class="field-group">
+                <label for="f_department">Department / cost centre</label>
+                <input type="text" id="f_department" name="department" autocomplete="organization" />
+              </div>
+              <div class="field-group">
+                <label for="f_condition">Condition</label>
+                <select id="f_condition" name="condition">
+                  <option value="Excellent">Excellent</option>
+                  <option value="Good" selected>Good</option>
+                  <option value="Fair">Fair</option>
+                  <option value="Poor">Poor</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="f_custodian">Custodian (responsible officer) <span aria-hidden="true">*</span></label>
+                <input type="text" id="f_custodian" name="custodian" required autocomplete="name" />
+              </div>
+              <div class="field-group">
+                <label for="f_acquisitionDate">Acquisition date</label>
+                <input type="date" id="f_acquisitionDate" name="acquisitionDate" />
+              </div>
+              <div class="field-group">
+                <label for="f_purchaseValue">Purchase value (local currency)</label>
+                <input type="number" id="f_purchaseValue" name="purchaseValue" min="0" step="0.01" />
+              </div>
+              <div class="field-group">
+                <label for="f_serialNumber">Serial / chassis / registration</label>
+                <input type="text" id="f_serialNumber" name="serialNumber" autocomplete="off" />
+              </div>
+              <div class="field-group span-2">
+                <label for="f_notes">Notes (maintenance, verification, audit remarks)</label>
+                <textarea id="f_notes" name="notes" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" id="btn-submit">Save asset</button>
+              <button type="button" class="btn btn--secondary" id="btn-cancel-edit" hidden>Cancel edit</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="toolbar no-print" aria-label="Search and export">
+        <div class="field-group">
+          <label for="search">Search register</label>
+          <input type="search" id="search" placeholder="Tag, name, department, custodian&hellip;" autocomplete="off" />
+        </div>
+        <div class="field-group">
+          <label for="filter-category">Category</label>
+          <select id="filter-category">
+            <option value="">All</option>
+            <option value="Vehicle">Vehicle</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Equipment">Equipment</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="filter-condition">Condition</label>
+          <select id="filter-condition">
+            <option value="">All</option>
+            <option value="Excellent">Excellent</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="filter-location">Location contains</label>
+          <input type="text" id="filter-location" autocomplete="off" />
+        </div>
+        <button type="button" class="btn btn--secondary" id="btn-clear-filters">Clear filters</button>
+        <button type="button" class="btn btn--secondary" id="btn-export-csv">Export CSV</button>
+        <button type="button" class="btn btn--secondary" id="btn-export-json">Export JSON</button>
+        <label class="btn btn--secondary" style="cursor: pointer">
+          Import JSON
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </label>
+        <button type="button" class="btn btn--secondary" id="btn-print">Print view</button>
+      </section>
+
+      <section class="panel print-assets" aria-labelledby="table-heading">
+        <div class="panel__head">
+          <h2 id="table-heading">Asset register</h2>
+        </div>
+        <div class="panel__body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Tag</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Department</th>
+                  <th scope="col">Condition</th>
+                  <th scope="col">Custodian</th>
+                  <th scope="col">Last updated</th>
+                  <th scope="col" class="no-print">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="asset-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel audit-panel no-print" aria-labelledby="audit-heading">
+        <div class="panel__head">
+          <h2 id="audit-heading">Audit trail (local)</h2>
+        </div>
+        <div class="panel__body">
+          <ul class="audit-list" id="audit-list"></ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" role="contentinfo">
+      <p>
+        &copy; <span id="footer-year"></span> Manyame Rural District Council &mdash; internal asset management
+        interface. Symbols use HTML entities; no emoji icons.
+      </p>
+    </footer>
+
+    <script>
+      document.getElementById("footer-year").textContent = new Date().getFullYear();
+    </script>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
