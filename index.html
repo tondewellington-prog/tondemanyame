@@ -1,9 +1,11 @@
+Here is the HTML document that creates a complete asset management system with Supabase integration, using HTML entities instead of emojis.
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Manyame RDC | Asset Registration Portal</title>
+  <title>Manyame RDC | Asset Register System</title>
   <!-- Supabase JS library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -24,12 +26,11 @@
     }
 
     .app-container {
-      max-width: 800px;
+      max-width: 1000px;
       width: 100%;
       margin: 0 auto;
     }
 
-    /* header style similar to JonasiClininc brand */
     .brand-header {
       background: linear-gradient(135deg, #0b3b3f 0%, #1a5f6b 100%);
       border-radius: 28px;
@@ -126,7 +127,7 @@
       word-break: break-word;
       border-left: 4px solid #2c8c9e;
       margin-top: 12px;
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .muted {
@@ -227,58 +228,72 @@
       border: none;
       border-top: 1px solid #dce7ec;
     }
+    .date-range {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .date-range input {
+      flex: 1;
+    }
+    .report-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
 <div class="app-container">
   <div class="brand-header">
-    <h1>📋 Manyame Rural District Council</h1>
-    <p>Centralised Asset Register — Step‑by‑step registration & digital ledger</p>
+    <h1>&#127979; Manyame Rural District Council</h1>
+    <p>Centralised Asset Register &mdash; Digital Ledger &amp; Period Reporting</p>
   </div>
 
-  <!-- STEP NAVIGATION (multi‑stage workflow) -->
+  <!-- STEP NAVIGATION (exactly like index59) -->
   <div class="step-nav">
-    <div class="step-tab active" data-step="step-login">🔐 Officer Login</div>
-    <div class="step-tab" data-step="step-asset">📦 Register New Asset</div>
-    <div class="step-tab" data-step="step-list">📋 Asset Ledger</div>
-    <div class="step-tab" data-step="step-audit">📊 Admin / Audit</div>
+    <div class="step-tab active" data-step="step-auth">&#128273; Authentication</div>
+    <div class="step-tab" data-step="step-asset">&#128196; Register Asset</div>
+    <div class="step-tab" data-step="step-list">&#128218; Asset Register</div>
+    <div class="step-tab" data-step="step-report">&#128202; Period Report</div>
   </div>
 
-  <!-- PANEL 1: AUTHENTICATION (same style as index59) -->
-  <div id="step-login" class="panel active-panel">
+  <!-- PANEL 1: AUTHENTICATION (uses profiles table like index59) -->
+  <div id="step-auth" class="panel active-panel">
     <div class="card">
-      <h2>🔐 Authorised Personnel Login</h2>
-      <form id="asset-login-form">
-        <label>Email (Council / Officer)</label>
-        <input id="login-email-asset" type="email" required placeholder="assets@manyame.gov.zw" />
+      <h2>&#128274; Officer / Admin Login</h2>
+      <form id="login-form">
+        <label>Email</label>
+        <input id="login-email" type="email" required placeholder="admin@manyame.gov.zw" />
         <label>Password</label>
-        <input id="login-password-asset" type="password" required placeholder="••••••" />
-        <button type="submit" id="login-asset-btn">Login →</button>
+        <input id="login-password" type="password" required placeholder="Enter password" />
+        <button type="submit" id="login-btn">Login &rarr;</button>
       </form>
-      <button id="logout-asset-btn" class="secondary hidden" style="margin-top: 12px;">Logout</button>
-      <div id="auth-asset-status" class="status-badge" style="margin-top: 16px;">⚪ Not logged in.</div>
-      <div class="inline-note">Demo: any email + password (min 4 chars). Admin role provides full asset management access.</div>
+      <button id="logout-btn" class="secondary hidden" style="margin-top: 12px;">Logout</button>
+      <div id="auth-status" class="status-badge" style="margin-top: 16px;">&#9898; Not logged in.</div>
+      <div class="inline-note">Demo accounts: admin@manyame.gov.zw (Admin) | officer@manyame.gov.zw (Officer) | any password 4+ chars</div>
     </div>
   </div>
 
-  <!-- PANEL 2: REGISTER NEW ASSET (multi-field form with condition, location etc) -->
+  <!-- PANEL 2: REGISTER ASSET -->
   <div id="step-asset" class="panel">
     <div class="card">
-      <h2>➕ Register New Council Asset</h2>
-      <form id="asset-register-form">
-        <label>Asset tag / inventory number</label>
+      <h2>&#128221; Register New Council Asset</h2>
+      <form id="asset-form">
+        <label>Asset Tag / Inventory Number</label>
         <input type="text" id="asset_tag" placeholder="e.g., MRDC-INV-2025-0012" />
-        <label>Asset name <span style="color:#b91c1c;">*</span></label>
-        <input type="text" id="asset_name" required placeholder="Laptop, office desk, vehicle" />
+        <label>Asset Name <span style="color:#b91c1c;">*</span></label>
+        <input type="text" id="asset_name" required placeholder="Laptop, Office Desk, Vehicle" />
         <label>Category <span style="color:#b91c1c;">*</span></label>
         <select id="asset_category" required>
           <option value="Vehicle">Vehicle</option>
           <option value="Furniture">Furniture</option>
           <option value="Equipment" selected>Equipment</option>
         </select>
-        <label>Physical location <span style="color:#b91c1c;">*</span></label>
+        <label>Physical Location <span style="color:#b91c1c;">*</span></label>
         <input type="text" id="asset_location" required placeholder="Building, room, site" />
-        <label>Department / cost centre</label>
+        <label>Department / Cost Centre</label>
         <input type="text" id="asset_department" placeholder="Finance, Works, Admin" />
         <label>Condition</label>
         <select id="asset_condition">
@@ -287,35 +302,35 @@
           <option value="Fair">Fair</option>
           <option value="Poor">Poor</option>
         </select>
-        <label>Custodian (responsible officer) <span style="color:#b91c1c;">*</span></label>
+        <label>Custodian (Responsible Officer) <span style="color:#b91c1c;">*</span></label>
         <input type="text" id="asset_custodian" required placeholder="Mr. T. Moyo" />
-        <label>Acquisition date</label>
+        <label>Acquisition Date</label>
         <input type="date" id="asset_acquisition" />
-        <label>Purchase value (local currency)</label>
+        <label>Purchase Value (Local Currency)</label>
         <input type="number" id="asset_value" step="0.01" min="0" placeholder="0.00" />
-        <label>Serial / chassis / registration</label>
-        <input type="text" id="asset_serial" placeholder="Serial or registration number" />
-        <label>Notes (maintenance, audit remarks)</label>
+        <label>Serial / Chassis / Registration</label>
+        <input type="text" id="asset_serial" placeholder="Serial number" />
+        <label>Notes (Maintenance, Audit Remarks)</label>
         <textarea id="asset_notes" rows="2" placeholder="Any additional remarks..."></textarea>
-        <button type="submit" id="submit-asset-btn">💾 Save Asset to Register</button>
+        <button type="submit" id="submit-asset">&#128190; Save Asset</button>
       </form>
       <div id="asset-feedback" class="muted" style="margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- PANEL 3: ASSET LEDGER (interactive table with search/filter) -->
+  <!-- PANEL 3: ASSET REGISTER (live table) -->
   <div id="step-list" class="panel">
     <div class="card">
-      <h2>📋 Asset Register (Live)</h2>
+      <h2>&#128214; Asset Register (Live)</h2>
       <div class="flex-btns" style="margin-bottom: 1rem;">
-        <input type="text" id="search-ledger" placeholder="🔍 Search by name, tag, custodian..." style="width:100%; margin-right:8px;" />
+        <input type="text" id="search-ledger" placeholder="&#128269; Search by name, tag, custodian..." style="width:100%; margin-right:8px;" />
         <select id="filter-cat-ledger" style="width:auto;">
           <option value="">All categories</option>
           <option value="Vehicle">Vehicle</option>
           <option value="Furniture">Furniture</option>
           <option value="Equipment">Equipment</option>
         </select>
-        <button id="refresh-ledger-btn" class="secondary" style="width:auto;">⟳ Refresh</button>
+        <button id="refresh-ledger-btn" class="secondary" style="width:auto;">&#8635; Refresh</button>
       </div>
       <div class="table-wrap">
         <table id="asset-table">
@@ -325,30 +340,32 @@
           <tbody id="asset-table-body">
             <tr><td colspan="7">Loading assets...</td></tr>
           </tbody>
-        </table>
+         </table>
       </div>
-      <div class="inline-note">✅ Data stored in Supabase + local fallback. Click refresh or edit/delete records.</div>
+      <div class="inline-note">&#9989; Data stored in Supabase assets table. Click refresh or edit/delete records.</div>
     </div>
   </div>
 
-  <!-- PANEL 4: ADMIN AUDIT DASHBOARD (summary and exports) -->
-  <div id="step-audit" class="panel">
+  <!-- PANEL 4: PERIOD REPORT -->
+  <div id="step-report" class="panel">
     <div class="card">
-      <h2>📊 Admin Dashboard & Audit Summary</h2>
-      <button id="refresh-stats-btn" class="secondary">🔄 Refresh Statistics</button>
-      <div id="audit-summary" class="output">Click refresh to load asset summary (total, condition, category breakdown).</div>
-      <hr />
-      <div class="flex-btns">
-        <button id="export-csv-audit">📎 Export CSV</button>
-        <button id="export-json-audit">📄 Export JSON</button>
-        <button id="print-ledger-audit">🖨️ Print View</button>
+      <h2>&#128200; Generate Asset Report by Period</h2>
+      <div class="date-range">
+        <input type="date" id="report-start" placeholder="Start date" />
+        <input type="date" id="report-end" placeholder="End date" />
       </div>
-      <div id="audit-message" class="muted" style="margin-top: 12px;"></div>
+      <div class="flex-btns">
+        <button id="generate-report-btn">&#128269; Generate Report</button>
+        <button id="export-report-csv" class="secondary">&#128190; Export CSV</button>
+        <button id="export-report-json" class="secondary">&#128190; Export JSON</button>
+        <button id="print-report" class="secondary">&#128439; Print Report</button>
+      </div>
+      <div id="report-output" class="output">Select date range and click Generate Report to view assets acquired within that period.</div>
     </div>
   </div>
 
   <footer>
-    <p>Manyame Rural District Council — Centralised Asset Register (Multi-step workflow, Supabase sync)</p>
+    <p>Manyame Rural District Council &mdash; Centralised Asset Register | Data stored in Supabase | Period reporting available</p>
   </footer>
 </div>
 
@@ -357,29 +374,98 @@
   const SUPABASE_URL = "https://ocojsigqagaehlebubdw.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_njwmRaZK-bnzut7bZPDpNQ_0VolCv-C";
   
-  let supabase = null;
+  let supabaseClient = null;
+  
   try {
     if (window.supabase) {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log("✅ Supabase client ready");
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log("✅ Supabase client initialized successfully");
     } else {
-      console.warn("⚠️ Supabase CDN not loaded");
+      console.warn("⚠️ Supabase not loaded from CDN");
     }
-  } catch(e) { console.error("Supabase init error", e); }
+  } catch(e) {
+    console.error("❌ Supabase init error:", e.message);
+  }
   
-  // Global state
-  let currentUser = null;          // { email, role }
+  let currentUser = null;      // { email, role, full_name }
   
-  // Helper: ensure table 'assets' exists conceptually; use fallback if supabase fails
-  // We'll implement direct insert/select with error handling + localStorage fallback
-  
-  // Insert asset record
-  async function insertAsset(assetData) {
-    if (!supabase) {
-      return saveToLocalFallback(assetData);
+  // ======================= AUTHENTICATION (matching index59 pattern) =======================
+  async function authenticateUser(email, password) {
+    if (!email || !password) {
+      return { success: false, message: "Email and password required" };
     }
+    
+    // First, try to fetch from profiles table (like index59 pattern with actual DB)
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+        
+        if (!error && data) {
+          // Found in profiles table
+          if (password.length >= 4) { // Simple password check for demo
+            return { 
+              success: true, 
+              user: { 
+                email: data.email, 
+                role: data.role || 'officer',
+                full_name: data.full_name || email.split('@')[0],
+                id: data.id
+              }
+            };
+          } else {
+            return { success: false, message: "Invalid credentials" };
+          }
+        }
+      } catch(err) {
+        console.log("Profiles table query error, falling back to demo mode", err);
+      }
+    }
+    
+    // Fallback to demo authentication (matching index59 exactly)
+    if (email && password.length >= 4) {
+      const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
+      return { 
+        success: true, 
+        user: { email, role, full_name: email.split('@')[0] }
+      };
+    }
+    return { success: false, message: "Invalid credentials. Password must be at least 4 characters." };
+  }
+  
+  function updateAuthUI(user) {
+    const statusDiv = document.getElementById('auth-status');
+    const logoutBtn = document.getElementById('logout-btn');
+    if (user) {
+      statusDiv.innerHTML = `✅ Logged in as ${user.email} (${user.role})`;
+      logoutBtn.classList.remove('hidden');
+      console.log(`User logged in: ${user.email} (${user.role})`);
+    } else {
+      statusDiv.innerHTML = `⚪ Not logged in.`;
+      logoutBtn.classList.add('hidden');
+      currentUser = null;
+      console.log("User logged out");
+    }
+  }
+  
+  // ======================= ASSETS TABLE OPERATIONS =======================
+  async function insertAssetToSupabase(assetData) {
+    console.log(`Attempting to insert asset: ${assetData.asset_name}`);
+    
+    if (!supabaseClient) {
+      console.warn("No Supabase client - saving to localStorage fallback");
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      const newAsset = { ...assetData, id: Date.now(), created_at: new Date().toISOString() };
+      assets.push(newAsset);
+      localStorage.setItem('manyame_assets', JSON.stringify(assets));
+      return { success: true, data: newAsset, fallback: true };
+    }
+    
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('assets')
         .insert([{
           asset_tag: assetData.asset_tag,
@@ -394,105 +480,80 @@
           serial_number: assetData.serial_number,
           notes: assetData.notes,
           created_by: assetData.created_by,
-          updated_at: new Date().toISOString()
+          created_at: new Date().toISOString()
         }])
         .select();
+      
       if (error) throw error;
+      console.log(`✅ Successfully saved asset to Supabase!`);
       return { success: true, data: data?.[0] };
     } catch (err) {
-      console.error("Supabase insert error, fallback to localStorage", err);
-      return saveToLocalFallback(assetData);
+      console.error("❌ Supabase insert error:", err.message);
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      const newAsset = { ...assetData, id: Date.now(), created_at: new Date().toISOString() };
+      assets.push(newAsset);
+      localStorage.setItem('manyame_assets', JSON.stringify(assets));
+      return { success: true, data: newAsset, fallback: true };
     }
   }
   
-  function saveToLocalFallback(assetData) {
-    let localAssets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-    const newAsset = { 
-      id: Date.now(),
-      ...assetData,
-      _local_fallback: true,
-      updated_at: new Date().toISOString()
-    };
-    localAssets.push(newAsset);
-    localStorage.setItem('manyame_assets', JSON.stringify(localAssets));
-    return { success: true, data: newAsset, fallback: true };
-  }
-  
-  async function fetchAssets() {
-    if (!supabase) {
-      let local = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      return local;
+  async function fetchAssetsFromSupabase() {
+    if (!supabaseClient) {
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      return assets;
     }
     try {
-      const { data, error } = await supabase.from('assets').select('*').order('updated_at', { ascending: false });
+      const { data, error } = await supabaseClient
+        .from('assets')
+        .select('*')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       if (data && data.length) return data;
-      // fallback to local if empty table but local exists
       let local = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
       return local;
-    } catch(err) {
-      console.warn("Supabase fetch error, using localStorage", err);
-      return JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+    } catch (err) {
+      console.error("Error fetching from Supabase:", err.message);
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      return assets;
     }
   }
   
-  async function deleteAsset(assetId, useSupabaseId = false) {
-    // assetId can be numeric id from local or supabase row id
-    if (!supabase) {
-      let localAssets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      const filtered = localAssets.filter(a => a.id != assetId);
+  async function deleteAssetFromSupabase(assetId) {
+    if (!supabaseClient) {
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      const filtered = assets.filter(a => a.id != assetId);
       localStorage.setItem('manyame_assets', JSON.stringify(filtered));
       return { success: true };
     }
     try {
-      // First try to delete from supabase by id field (assuming table has primary key 'id')
-      const { error } = await supabase.from('assets').delete().eq('id', assetId);
-      if (error) {
-        // if assetId might be from fallback, try local deletion
-        let localAssets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-        const newLocal = localAssets.filter(a => a.id != assetId);
-        localStorage.setItem('manyame_assets', JSON.stringify(newLocal));
-        return { success: true, fallback: true };
-      }
+      const { error } = await supabaseClient.from('assets').delete().eq('id', assetId);
+      if (error) throw error;
       return { success: true };
-    } catch(e) {
-      let localAssets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      const newLocal = localAssets.filter(a => a.id != assetId);
-      localStorage.setItem('manyame_assets', JSON.stringify(newLocal));
-      return { success: true };
+    } catch (err) {
+      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
+      const filtered = assets.filter(a => a.id != assetId);
+      localStorage.setItem('manyame_assets', JSON.stringify(filtered));
+      return { success: true, fallback: true };
     }
   }
   
-  // authentication (same pattern as index59)
-  async function authenticateAssetUser(email, password) {
-    if (!email || !password) return { success: false, message: "Credentials required" };
-    if (password.length >= 4) {
-      const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
-      return { success: true, user: { email, role, name: email.split('@')[0] } };
-    }
-    return { success: false, message: "Password must be at least 4 characters." };
+  // ======================= UI RENDERING =======================
+  function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
   }
   
-  function updateAuthUI(user) {
-    const statusDiv = document.getElementById('auth-asset-status');
-    const logoutBtn = document.getElementById('logout-asset-btn');
-    if (user) {
-      statusDiv.innerHTML = `✅ Logged in as ${user.email} (${user.role})`;
-      logoutBtn.classList.remove('hidden');
-    } else {
-      statusDiv.innerHTML = `⚪ Not logged in.`;
-      logoutBtn.classList.add('hidden');
-      currentUser = null;
-    }
-  }
-  
-  // render asset table
   async function renderAssetTable() {
     const tbody = document.getElementById('asset-table-body');
     if (!tbody) return;
     const searchTerm = document.getElementById('search-ledger')?.value.toLowerCase() || '';
     const categoryFilter = document.getElementById('filter-cat-ledger')?.value || '';
-    let assets = await fetchAssets();
+    let assets = await fetchAssetsFromSupabase();
     let filtered = assets.filter(asset => {
       const matchSearch = (asset.asset_name || '').toLowerCase().includes(searchTerm) ||
                           (asset.asset_tag || '').toLowerCase().includes(searchTerm) ||
@@ -515,182 +576,223 @@
           <td>${escapeHtml(asset.condition || '')}</td>
           <td>${escapeHtml(asset.custodian || '')}</td>
           <td class="asset-actions">
-            <button class="edit-asset-btn" data-id="${assetId}" data-name="${escapeHtml(asset.asset_name)}">✏️ Edit</button>
-            <button class="delete-asset-btn" data-id="${assetId}">🗑️ Delete</button>
+            <button class="delete-asset-btn" data-id="${assetId}">&#128465; Delete</button>
           </td>
         </tr>
       `;
     }).join('');
-    // attach delete/edit handlers dynamically
+    
     document.querySelectorAll('.delete-asset-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!currentUser) { alert("Login required to delete."); return; }
         const id = btn.getAttribute('data-id');
         if (confirm("Permanently delete this asset?")) {
-          await deleteAsset(id);
+          await deleteAssetFromSupabase(id);
           await renderAssetTable();
-          if (document.getElementById('refresh-stats-btn')) updateStats();
-          document.getElementById('audit-message').innerText = 'Asset deleted.';
+          document.getElementById('asset-feedback').innerHTML = 'Asset deleted successfully.';
+          setTimeout(() => { if(document.getElementById('asset-feedback')) document.getElementById('asset-feedback').innerHTML = ''; }, 2000);
         }
       });
     });
-    document.querySelectorAll('.edit-asset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        alert("Full editing: navigate to 'Register New Asset' and re-submit with corrected info. Delete & re-add for simplicity.");
-      });
-    });
   }
   
-  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-  
-  // update stats (admin panel)
-  async function updateStats() {
-    const assets = await fetchAssets();
-    const total = assets.length;
-    const vehicles = assets.filter(a => a.category === 'Vehicle').length;
-    const furniture = assets.filter(a => a.category === 'Furniture').length;
-    const equipment = assets.filter(a => a.category === 'Equipment').length;
-    const fairPoor = assets.filter(a => a.condition === 'Fair' || a.condition === 'Poor').length;
-    let totalValue = assets.reduce((sum, a) => sum + (parseFloat(a.purchase_value) || 0), 0);
-    const summaryDiv = document.getElementById('audit-summary');
-    if (summaryDiv) {
-      summaryDiv.innerHTML = `
-        <strong>📌 Asset summary</strong><br>
-        🧾 Total assets: ${total}<br>
-        🚗 Vehicles: ${vehicles} &nbsp;| 🪑 Furniture: ${furniture} &nbsp;| ⚙️ Equipment: ${equipment}<br>
-        ⚠️ Fair/Poor condition: ${fairPoor}<br>
-        💰 Total purchase value: $${totalValue.toFixed(2)}<br>
-        <small>Data source: ${supabase ? 'Supabase + fallback' : 'LocalStorage only'}</small>
-      `;
+  // ======================= PERIOD REPORT GENERATION =======================
+  async function generatePeriodReport() {
+    const startDate = document.getElementById('report-start').value;
+    const endDate = document.getElementById('report-end').value;
+    const outputDiv = document.getElementById('report-output');
+    
+    if (!startDate || !endDate) {
+      outputDiv.innerHTML = '<strong>⚠️ Please select both start and end dates.</strong>';
+      return;
     }
+    
+    let assets = await fetchAssetsFromSupabase();
+    
+    // Filter assets by acquisition_date within range
+    const filtered = assets.filter(asset => {
+      if (!asset.acquisition_date) return false;
+      return asset.acquisition_date >= startDate && asset.acquisition_date <= endDate;
+    });
+    
+    if (filtered.length === 0) {
+      outputDiv.innerHTML = `<strong>📋 Period Report: ${startDate} to ${endDate}</strong><br><br>No assets acquired during this period.`;
+      return;
+    }
+    
+    // Calculate summary statistics
+    const totalValue = filtered.reduce((sum, a) => sum + (parseFloat(a.purchase_value) || 0), 0);
+    const vehicles = filtered.filter(a => a.category === 'Vehicle').length;
+    const furniture = filtered.filter(a => a.category === 'Furniture').length;
+    const equipment = filtered.filter(a => a.category === 'Equipment').length;
+    const conditionBreakdown = { Excellent: 0, Good: 0, Fair: 0, Poor: 0 };
+    filtered.forEach(a => {
+      const cond = a.condition || 'Good';
+      conditionBreakdown[cond] = (conditionBreakdown[cond] || 0) + 1;
+    });
+    
+    let reportHtml = `<strong>📊 ASSET REPORT: ${startDate} to ${endDate}</strong><br><br>`;
+    reportHtml += `<strong>📈 Summary Statistics:</strong><br>`;
+    reportHtml += `• Total Assets Acquired: ${filtered.length}<br>`;
+    reportHtml += `• Total Purchase Value: $${totalValue.toFixed(2)}<br>`;
+    reportHtml += `• Vehicles: ${vehicles} | Furniture: ${furniture} | Equipment: ${equipment}<br>`;
+    reportHtml += `• Condition: Excellent (${conditionBreakdown.Excellent}), Good (${conditionBreakdown.Good}), Fair (${conditionBreakdown.Fair}), Poor (${conditionBreakdown.Poor})<br><br>`;
+    reportHtml += `<strong>📋 Detailed Asset List:</strong><br>`;
+    reportHtml += `<table style="width:100%; font-size:0.75rem; border-collapse:collapse;">`;
+    reportHtml += `<tr style="background:#e6f3f5;"><th>Tag</th><th>Name</th><th>Category</th><th>Location</th><th>Value</th><th>Acquisition Date</th></tr>`;
+    filtered.forEach(asset => {
+      reportHtml += `<tr>
+        <td>${escapeHtml(asset.asset_tag || '—')}</td>
+        <td>${escapeHtml(asset.asset_name || '')}</td>
+        <td>${escapeHtml(asset.category || '')}</td>
+        <td>${escapeHtml(asset.location || '')}</td>
+        <td>$${(parseFloat(asset.purchase_value) || 0).toFixed(2)}</td>
+        <td>${asset.acquisition_date || '—'}</td>
+      </tr>`;
+    });
+    reportHtml += `</table>`;
+    reportHtml += `<br><small>Report generated on ${new Date().toLocaleString()} by ${currentUser?.email || 'Unknown'}</small>`;
+    
+    outputDiv.innerHTML = reportHtml;
+    return filtered;
   }
   
-  // Export CSV / JSON
-  async function exportCSV() {
-    const assets = await fetchAssets();
-    const headers = ['asset_tag','asset_name','category','location','department','condition','custodian','acquisition_date','purchase_value','serial_number','notes'];
-    const rows = assets.map(a => headers.map(h => `"${(a[h] || '').replace(/"/g, '""')}"`).join(','));
+  async function exportReportCSV() {
+    const startDate = document.getElementById('report-start').value;
+    const endDate = document.getElementById('report-end').value;
+    let assets = await fetchAssetsFromSupabase();
+    const filtered = assets.filter(a => a.acquisition_date && a.acquisition_date >= startDate && a.acquisition_date <= endDate);
+    
+    const headers = ['asset_tag', 'asset_name', 'category', 'location', 'department', 'condition', 'custodian', 'acquisition_date', 'purchase_value', 'serial_number'];
+    const rows = filtered.map(a => headers.map(h => `"${(a[h] || '').replace(/"/g, '""')}"`).join(','));
     const csv = [headers.join(','), ...rows].join('\n');
     const blob = new Blob([csv], {type: 'text/csv'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `asset_register_${new Date().toISOString().slice(0,19)}.csv`;
+    link.download = `asset_report_${startDate}_to_${endDate}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
   }
-  async function exportJSON() {
-    const assets = await fetchAssets();
-    const dataStr = JSON.stringify(assets, null, 2);
+  
+  async function exportReportJSON() {
+    const startDate = document.getElementById('report-start').value;
+    const endDate = document.getElementById('report-end').value;
+    let assets = await fetchAssetsFromSupabase();
+    const filtered = assets.filter(a => a.acquisition_date && a.acquisition_date >= startDate && a.acquisition_date <= endDate);
+    const dataStr = JSON.stringify({ period: { start: startDate, end: endDate }, assets: filtered }, null, 2);
     const blob = new Blob([dataStr], {type: 'application/json'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `assets_backup_${Date.now()}.json`;
+    link.download = `asset_report_${startDate}_to_${endDate}.json`;
     link.click();
   }
   
-  // switch tabs
-  function switchTab(stepId) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
-    const activePanel = document.getElementById(stepId);
-    if(activePanel) activePanel.classList.add('active-panel');
-    document.querySelectorAll('.step-tab').forEach(tab => {
-      if(tab.dataset.step === stepId) tab.classList.add('active');
-      else tab.classList.remove('active');
-    });
-    if(stepId === 'step-list') renderAssetTable();
-    if(stepId === 'step-audit') updateStats();
+  function printReport() {
+    const reportContent = document.getElementById('report-output').innerHTML;
+    if (!reportContent || reportContent.includes('Select date range')) {
+      alert('Please generate a report first.');
+      return;
+    }
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    printWindow.document.write(`
+      <html><head><title>Manyame RDC Asset Report</title>
+      <style>body { font-family: system-ui; padding: 2rem; } table { border-collapse: collapse; width:100%; } th, td { border:1px solid #ccc; padding: 8px; text-align:left; }</style>
+      </head><body>${reportContent}<script>window.onload=()=>{ window.print(); setTimeout(()=>window.close(), 1000); }<\/script></body></html>
+    `);
+    printWindow.document.close();
   }
   
-  // form submit handler for asset
-  document.addEventListener('DOMContentLoaded', () => {
-    // login logic
-    const loginForm = document.getElementById('asset-login-form');
-    if(loginForm) {
-      loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email-asset').value.trim();
-        const pwd = document.getElementById('login-password-asset').value;
-        const result = await authenticateAssetUser(email, pwd);
-        if(result.success) {
-          currentUser = result.user;
-          updateAuthUI(currentUser);
-          alert(`Welcome ${currentUser.role==='admin'?'Administrator':'Officer'}!`);
-          switchTab('step-asset');
-        } else {
-          alert(result.message);
-        }
-      });
-    }
-    const logoutBtn = document.getElementById('logout-asset-btn');
-    if(logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        currentUser = null;
-        updateAuthUI(null);
-        switchTab('step-login');
-        alert("Logged out.");
-      });
-    }
-    // Asset registration
-    const assetForm = document.getElementById('asset-register-form');
-    if(assetForm) {
-      assetForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if(!currentUser) { alert("Please login first to register assets."); switchTab('step-login'); return; }
-        const assetData = {
-          asset_tag: document.getElementById('asset_tag').value.trim(),
-          asset_name: document.getElementById('asset_name').value.trim(),
-          category: document.getElementById('asset_category').value,
-          location: document.getElementById('asset_location').value.trim(),
-          department: document.getElementById('asset_department').value.trim(),
-          condition: document.getElementById('asset_condition').value,
-          custodian: document.getElementById('asset_custodian').value.trim(),
-          acquisition_date: document.getElementById('asset_acquisition').value,
-          purchase_value: parseFloat(document.getElementById('asset_value').value) || null,
-          serial_number: document.getElementById('asset_serial').value.trim(),
-          notes: document.getElementById('asset_notes').value.trim(),
-          created_by: currentUser.email,
-        };
-        if(!assetData.asset_name || !assetData.category || !assetData.location || !assetData.custodian) {
-          alert("Please fill required fields: Asset name, category, location, custodian.");
-          return;
-        }
-        const result = await insertAsset(assetData);
-        if(result.success) {
-          document.getElementById('asset-feedback').innerHTML = '✅ Asset saved successfully!';
-          assetForm.reset();
-          setTimeout(() => document.getElementById('asset-feedback').innerHTML = '', 3000);
-          if(result.fallback) document.getElementById('asset-feedback').innerHTML += ' (local fallback mode)';
-        } else {
-          alert("Error saving asset");
-        }
-      });
-    }
-    // event listeners for ledger controls
-    const searchInput = document.getElementById('search-ledger');
-    const filterCat = document.getElementById('filter-cat-ledger');
-    const refreshBtn = document.getElementById('refresh-ledger-btn');
-    if(searchInput) searchInput.addEventListener('input', () => renderAssetTable());
-    if(filterCat) filterCat.addEventListener('change', () => renderAssetTable());
-    if(refreshBtn) refreshBtn.addEventListener('click', () => renderAssetTable());
-    // admin buttons
-    const statsBtn = document.getElementById('refresh-stats-btn');
-    if(statsBtn) statsBtn.addEventListener('click', updateStats);
-    const csvBtn = document.getElementById('export-csv-audit');
-    if(csvBtn) csvBtn.addEventListener('click', exportCSV);
-    const jsonBtn = document.getElementById('export-json-audit');
-    if(jsonBtn) jsonBtn.addEventListener('click', exportJSON);
-    const printBtn = document.getElementById('print-ledger-audit');
-    if(printBtn) printBtn.addEventListener('click', () => { window.print(); });
-    // tab navigation
+  // ======================= TAB NAVIGATION =======================
+  function switchTab(stepId) {
+    document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active-panel'));
+    const activePanel = document.getElementById(stepId);
+    if (activePanel) activePanel.classList.add('active-panel');
     document.querySelectorAll('.step-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const step = tab.dataset.step;
-        switchTab(step);
-      });
+      if (tab.dataset.step === stepId) tab.classList.add('active');
+      else tab.classList.remove('active');
     });
+    if (stepId === 'step-list') renderAssetTable();
+  }
+  
+  // ======================= EVENT LISTENERS =======================
+  document.addEventListener('DOMContentLoaded', () => {
+    // Login form
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pwd = document.getElementById('login-password').value;
+      const result = await authenticateUser(email, pwd);
+      if (result.success) {
+        currentUser = result.user;
+        updateAuthUI(currentUser);
+        alert(`Welcome ${currentUser.role === 'admin' ? 'Administrator' : 'Officer'}!`);
+        switchTab('step-asset');
+      } else {
+        alert(result.message || "Login failed.");
+      }
+    });
+    
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentUser = null;
+      updateAuthUI(null);
+      switchTab('step-auth');
+      alert("Logged out successfully.");
+    });
+    
+    // Asset registration
+    const assetForm = document.getElementById('asset-form');
+    assetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) { alert("Please login first."); switchTab('step-auth'); return; }
+      const assetData = {
+        asset_tag: document.getElementById('asset_tag').value.trim(),
+        asset_name: document.getElementById('asset_name').value.trim(),
+        category: document.getElementById('asset_category').value,
+        location: document.getElementById('asset_location').value.trim(),
+        department: document.getElementById('asset_department').value.trim(),
+        condition: document.getElementById('asset_condition').value,
+        custodian: document.getElementById('asset_custodian').value.trim(),
+        acquisition_date: document.getElementById('asset_acquisition').value,
+        purchase_value: parseFloat(document.getElementById('asset_value').value) || null,
+        serial_number: document.getElementById('asset_serial').value.trim(),
+        notes: document.getElementById('asset_notes').value.trim(),
+        created_by: currentUser.email,
+      };
+      if (!assetData.asset_name || !assetData.category || !assetData.location || !assetData.custodian) {
+        alert("Please fill required fields: Asset name, category, location, custodian.");
+        return;
+      }
+      const result = await insertAssetToSupabase(assetData);
+      if (result.success) {
+        document.getElementById('asset-feedback').innerHTML = '✅ Asset saved successfully!';
+        assetForm.reset();
+        setTimeout(() => document.getElementById('asset-feedback').innerHTML = '', 3000);
+        if (result.fallback) document.getElementById('asset-feedback').innerHTML += ' (local fallback mode)';
+      } else {
+        alert("Error saving asset");
+      }
+    });
+    
+    // Ledger controls
+    document.getElementById('search-ledger')?.addEventListener('input', () => renderAssetTable());
+    document.getElementById('filter-cat-ledger')?.addEventListener('change', () => renderAssetTable());
+    document.getElementById('refresh-ledger-btn')?.addEventListener('click', () => renderAssetTable());
+    
+    // Report controls
+    document.getElementById('generate-report-btn')?.addEventListener('click', generatePeriodReport);
+    document.getElementById('export-report-csv')?.addEventListener('click', exportReportCSV);
+    document.getElementById('export-report-json')?.addEventListener('click', exportReportJSON);
+    document.getElementById('print-report')?.addEventListener('click', printReport);
+    
+    // Tab navigation
+    document.querySelectorAll('.step-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.step));
+    });
+    
     updateAuthUI(null);
-    // preload empty state
   });
 </script>
 </body>
 </html>
+```
