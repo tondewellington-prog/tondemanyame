@@ -240,27 +240,82 @@
       gap: 12px;
       margin-top: 16px;
     }
+
+    /* ======================= MODAL ======================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 76, 92, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal-overlay.hidden {
+      display: none;
+    }
+    .modal {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 440px;
+      padding: 1.6rem 1.8rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      animation: fadeIn 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .modal__head h2 {
+      font-size: 1.2rem;
+      color: #0f4c5c;
+      border-left: 4px solid #2c8c9e;
+      padding-left: 12px;
+      margin: 0;
+    }
+    .modal__close {
+      background: none;
+      color: #64748b;
+      font-size: 1.6rem;
+      line-height: 1;
+      padding: 0 6px;
+      width: auto;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .modal__close:hover {
+      background: #f1f5f9;
+      color: #0f4c5c;
+      transform: none;
+    }
   </style>
 </head>
 <body>
 <div class="app-container">
   <div class="brand-header">
-    <h1>&#127979; Manyame Rural District Council</h1>
+    <h1>Manyame Rural District Council</h1>
     <p>Centralised Asset Register &mdash; Digital Ledger &amp; Period Reporting</p>
   </div>
 
-  <!-- STEP NAVIGATION (exactly like index59) -->
+  <!-- STEP NAVIGATION -->
   <div class="step-nav">
-    <div class="step-tab active" data-step="step-auth">&#128273; Authentication</div>
-    <div class="step-tab" data-step="step-asset">&#128196; Register Asset</div>
-    <div class="step-tab" data-step="step-list">&#128218; Asset Register</div>
-    <div class="step-tab" data-step="step-report">&#128202; Period Report</div>
+    <div class="step-tab active" data-step="step-auth">Authentication</div>
+    <div class="step-tab" data-step="step-asset">Register Asset</div>
+    <div class="step-tab" data-step="step-list">Asset Register</div>
+    <div class="step-tab" data-step="step-report">Period Report</div>
   </div>
 
-  <!-- PANEL 1: AUTHENTICATION (uses profiles table like index59) -->
+  <!-- PANEL 1: AUTHENTICATION -->
   <div id="step-auth" class="panel active-panel">
     <div class="card">
-      <h2>&#128274; Officer / Admin Login</h2>
+      <h2>Officer / Admin Login</h2>
       <form id="login-form">
         <label>Email</label>
         <input id="login-email" type="email" required placeholder="admin@manyame.gov.zw" />
@@ -268,8 +323,9 @@
         <input id="login-password" type="password" required placeholder="Enter password" />
         <button type="submit" id="login-btn">Login &rarr;</button>
       </form>
-      <button id="logout-btn" class="secondary hidden" style="margin-top: 12px;">Logout</button>
-      <div id="auth-status" class="status-badge" style="margin-top: 16px;">&#9898; Not logged in.</div>
+      <button id="logout-btn" class="secondary hidden" style="margin-top: 12px; display: none;">Logout</button>
+      <button id="open-create-user-btn" class="secondary hidden" style="margin-top: 12px; display: none;">Create User</button>
+      <div id="auth-status" class="status-badge" style="margin-top: 16px;">Not logged in.</div>
       <div class="inline-note">Demo accounts: admin@manyame.gov.zw (Admin) | officer@manyame.gov.zw (Officer) | any password 4+ chars</div>
     </div>
   </div>
@@ -277,7 +333,7 @@
   <!-- PANEL 2: REGISTER ASSET -->
   <div id="step-asset" class="panel">
     <div class="card">
-      <h2>&#128221; Register New Council Asset</h2>
+      <h2>Register New Council Asset</h2>
       <form id="asset-form">
         <label>Asset Tag / Inventory Number</label>
         <input type="text" id="asset_tag" placeholder="e.g., MRDC-INV-2025-0012" />
@@ -310,25 +366,25 @@
         <input type="text" id="asset_serial" placeholder="Serial number" />
         <label>Notes (Maintenance, Audit Remarks)</label>
         <textarea id="asset_notes" rows="2" placeholder="Any additional remarks..."></textarea>
-        <button type="submit" id="submit-asset">&#128190; Save Asset</button>
+        <button type="submit" id="submit-asset">Save Asset</button>
       </form>
       <div id="asset-feedback" class="muted" style="margin-top: 10px;"></div>
     </div>
   </div>
 
-  <!-- PANEL 3: ASSET REGISTER (live table) -->
+  <!-- PANEL 3: ASSET REGISTER -->
   <div id="step-list" class="panel">
     <div class="card">
-      <h2>&#128214; Asset Register (Live)</h2>
+      <h2>Asset Register (Live)</h2>
       <div class="flex-btns" style="margin-bottom: 1rem;">
-        <input type="text" id="search-ledger" placeholder="&#128269; Search by name, tag, custodian..." style="width:100%; margin-right:8px;" />
+        <input type="text" id="search-ledger" placeholder="Search by name, tag, custodian..." style="width:100%; margin-right:8px;" />
         <select id="filter-cat-ledger" style="width:auto;">
           <option value="">All categories</option>
           <option value="Vehicle">Vehicle</option>
           <option value="Furniture">Furniture</option>
           <option value="Equipment">Equipment</option>
         </select>
-        <button id="refresh-ledger-btn" class="secondary" style="width:auto;">&#8635; Refresh</button>
+        <button id="refresh-ledger-btn" class="secondary" style="width:auto;">Refresh</button>
       </div>
       <div class="table-wrap">
         <table id="asset-table">
@@ -338,25 +394,25 @@
           <tbody id="asset-table-body">
             <tr><td colspan="7">Loading assets...</td></tr>
           </tbody>
-         </table>
+        </table>
       </div>
-      <div class="inline-note">&#9989; Data stored in Supabase assets table. Click refresh or edit/delete records.</div>
+      <div class="inline-note">Data stored in Supabase assets table. Click refresh or edit/delete records.</div>
     </div>
   </div>
 
   <!-- PANEL 4: PERIOD REPORT -->
   <div id="step-report" class="panel">
     <div class="card">
-      <h2>&#128200; Generate Asset Report by Period</h2>
+      <h2>Generate Asset Report by Period</h2>
       <div class="date-range">
         <input type="date" id="report-start" placeholder="Start date" />
         <input type="date" id="report-end" placeholder="End date" />
       </div>
       <div class="flex-btns">
-        <button id="generate-report-btn">&#128269; Generate Report</button>
-        <button id="export-report-csv" class="secondary">&#128190; Export CSV</button>
-        <button id="export-report-json" class="secondary">&#128190; Export JSON</button>
-        <button id="print-report" class="secondary">&#128439; Print Report</button>
+        <button id="generate-report-btn">Generate Report</button>
+        <button id="export-report-csv" class="secondary">Export CSV</button>
+        <button id="export-report-json" class="secondary">Export JSON</button>
+        <button id="print-report" class="secondary">Print Report</button>
       </div>
       <div id="report-output" class="output">Select date range and click Generate Report to view assets acquired within that period.</div>
     </div>
@@ -367,33 +423,60 @@
   </footer>
 </div>
 
+<!-- CREATE USER MODAL -->
+<div id="create-user-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal__head">
+      <h2>Create New User</h2>
+      <button type="button" id="close-user-modal" class="modal__close" aria-label="Close">&times;</button>
+    </div>
+    <form id="create-user-form">
+      <label>Full Name</label>
+      <input type="text" id="new-user-name" required placeholder="e.g., T. Moyo" />
+      <label>Email Address</label>
+      <input type="email" id="new-user-email" required placeholder="officer2@manyame.gov.zw" />
+      <label>Password</label>
+      <input type="password" id="new-user-password" required minlength="4" placeholder="Minimum 4 characters" />
+      <label>Role</label>
+      <select id="new-user-role">
+        <option value="officer" selected>Officer</option>
+        <option value="admin">Administrator</option>
+      </select>
+      <div id="create-user-feedback" class="muted" style="margin-top: 10px;"></div>
+      <div class="flex-btns">
+        <button type="submit" id="create-user-submit">Create User</button>
+        <button type="button" id="cancel-create-user" class="secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
-  // ======================= SUPABASE CONFIG (same as index59) =======================
+  // ======================= SUPABASE CONFIG =======================
   const SUPABASE_URL = "https://ocojsigqagaehlebubdw.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_njwmRaZK-bnzut7bZPDpNQ_0VolCv-C";
-  
+
   let supabaseClient = null;
-  
+
   try {
     if (window.supabase) {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log("✅ Supabase client initialized successfully");
+      console.log("Supabase client initialized successfully");
     } else {
-      console.warn("⚠️ Supabase not loaded from CDN");
+      console.warn("Supabase not loaded from CDN");
     }
-  } catch(e) {
-    console.error("❌ Supabase init error:", e.message);
+  } catch (e) {
+    console.error("Supabase init error:", e.message);
   }
-  
-  let currentUser = null;      // { email, role, full_name }
-  
-  // ======================= AUTHENTICATION (matching index59 pattern) =======================
+
+  let currentUser = null;
+
+  // ======================= AUTHENTICATION =======================
   async function authenticateUser(email, password) {
     if (!email || !password) {
       return { success: false, message: "Email and password required" };
     }
-    
-    // First, try to fetch from profiles table (like index59 pattern with actual DB)
+
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient
@@ -401,14 +484,13 @@
           .select('*')
           .eq('email', email)
           .maybeSingle();
-        
+
         if (!error && data) {
-          // Found in profiles table
-          if (password.length >= 4) { // Simple password check for demo
-            return { 
-              success: true, 
-              user: { 
-                email: data.email, 
+          if (password.length >= 4) {
+            return {
+              success: true,
+              user: {
+                email: data.email,
                 role: data.role || 'officer',
                 full_name: data.full_name || email.split('@')[0],
                 id: data.id
@@ -418,41 +500,103 @@
             return { success: false, message: "Invalid credentials" };
           }
         }
-      } catch(err) {
+      } catch (err) {
         console.log("Profiles table query error, falling back to demo mode", err);
       }
     }
-    
-    // Fallback to demo authentication (matching index59 exactly)
+
     if (email && password.length >= 4) {
       const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
-      return { 
-        success: true, 
+      return {
+        success: true,
         user: { email, role, full_name: email.split('@')[0] }
       };
     }
     return { success: false, message: "Invalid credentials. Password must be at least 4 characters." };
   }
-  
+
   function updateAuthUI(user) {
     const statusDiv = document.getElementById('auth-status');
     const logoutBtn = document.getElementById('logout-btn');
+    const createUserBtn = document.getElementById('open-create-user-btn');
+
     if (user) {
-      statusDiv.innerHTML = `✅ Logged in as ${user.email} (${user.role})`;
-      logoutBtn.classList.remove('hidden');
-      console.log(`User logged in: ${user.email} (${user.role})`);
+      statusDiv.innerHTML = 'Logged in as ' + user.email + ' (' + user.role + ')';
+      logoutBtn.style.display = 'block';
+      if (user.role === 'admin') {
+        createUserBtn.style.display = 'block';
+      } else {
+        createUserBtn.style.display = 'none';
+      }
+      console.log('User logged in: ' + user.email + ' (' + user.role + ')');
     } else {
-      statusDiv.innerHTML = `⚪ Not logged in.`;
-      logoutBtn.classList.add('hidden');
+      statusDiv.innerHTML = 'Not logged in.';
+      logoutBtn.style.display = 'none';
+      createUserBtn.style.display = 'none';
       currentUser = null;
       console.log("User logged out");
     }
   }
-  
+
+  // ======================= CREATE USER =======================
+  async function createUserInSupabase(newUser) {
+    if (!supabaseClient) {
+      return { success: false, message: "Supabase not available. Cannot create users." };
+    }
+
+    try {
+      const { data: existing, error: checkErr } = await supabaseClient
+        .from('profiles')
+        .select('id')
+        .eq('email', newUser.email)
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+      if (existing) {
+        return { success: false, message: "A user with this email already exists." };
+      }
+
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .insert([{
+          email: newUser.email,
+          full_name: newUser.full_name,
+          role: newUser.role
+        }])
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return { success: true, user: data };
+    } catch (err) {
+      console.error("Create user error:", err.message);
+      return { success: false, message: err.message };
+    }
+  }
+
+  function openCreateUserModal() {
+    if (!currentUser) {
+      alert("Please login first.");
+      return;
+    }
+    if (currentUser.role !== 'admin') {
+      alert("Only administrators can create new users.");
+      return;
+    }
+    document.getElementById('create-user-modal').classList.remove('hidden');
+    document.getElementById('new-user-name').focus();
+  }
+
+  function closeCreateUserModal() {
+    document.getElementById('create-user-modal').classList.add('hidden');
+    document.getElementById('create-user-form').reset();
+    document.getElementById('create-user-feedback').innerHTML = '';
+  }
+
   // ======================= ASSETS TABLE OPERATIONS =======================
   async function insertAssetToSupabase(assetData) {
-    console.log(`Attempting to insert asset: ${assetData.asset_name}`);
-    
+    console.log("Attempting to insert asset: " + assetData.asset_name);
+
     if (!supabaseClient) {
       console.warn("No Supabase client - saving to localStorage fallback");
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
@@ -461,7 +605,7 @@
       localStorage.setItem('manyame_assets', JSON.stringify(assets));
       return { success: true, data: newAsset, fallback: true };
     }
-    
+
     try {
       const { data, error } = await supabaseClient
         .from('assets')
@@ -481,12 +625,12 @@
           created_at: new Date().toISOString()
         }])
         .select();
-      
+
       if (error) throw error;
-      console.log(`✅ Successfully saved asset to Supabase!`);
+      console.log("Successfully saved asset to Supabase!");
       return { success: true, data: data?.[0] };
     } catch (err) {
-      console.error("❌ Supabase insert error:", err.message);
+      console.error("Supabase insert error:", err.message);
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
       const newAsset = { ...assetData, id: Date.now(), created_at: new Date().toISOString() };
       assets.push(newAsset);
@@ -494,7 +638,7 @@
       return { success: true, data: newAsset, fallback: true };
     }
   }
-  
+
   async function fetchAssetsFromSupabase() {
     if (!supabaseClient) {
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
@@ -515,7 +659,7 @@
       return assets;
     }
   }
-  
+
   async function deleteAssetFromSupabase(assetId) {
     if (!supabaseClient) {
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
@@ -534,18 +678,18 @@
       return { success: true, fallback: true };
     }
   }
-  
+
   // ======================= UI RENDERING =======================
-  function escapeHtml(str) { 
-    if (!str) return ''; 
-    return str.replace(/[&<>]/g, function(m) {
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function (m) {
       if (m === '&') return '&amp;';
       if (m === '<') return '&lt;';
       if (m === '>') return '&gt;';
       return m;
     });
   }
-  
+
   async function renderAssetTable() {
     const tbody = document.getElementById('asset-table-body');
     if (!tbody) return;
@@ -554,8 +698,8 @@
     let assets = await fetchAssetsFromSupabase();
     let filtered = assets.filter(asset => {
       const matchSearch = (asset.asset_name || '').toLowerCase().includes(searchTerm) ||
-                          (asset.asset_tag || '').toLowerCase().includes(searchTerm) ||
-                          (asset.custodian || '').toLowerCase().includes(searchTerm);
+        (asset.asset_tag || '').toLowerCase().includes(searchTerm) ||
+        (asset.custodian || '').toLowerCase().includes(searchTerm);
       const matchCat = categoryFilter === '' || asset.category === categoryFilter;
       return matchSearch && matchCat;
     });
@@ -574,12 +718,12 @@
           <td>${escapeHtml(asset.condition || '')}</td>
           <td>${escapeHtml(asset.custodian || '')}</td>
           <td class="asset-actions">
-            <button class="delete-asset-btn" data-id="${assetId}">&#128465; Delete</button>
+            <button class="delete-asset-btn" data-id="${assetId}">Delete</button>
           </td>
         </tr>
       `;
     }).join('');
-    
+
     document.querySelectorAll('.delete-asset-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         if (!currentUser) { alert("Login required to delete."); return; }
@@ -588,37 +732,35 @@
           await deleteAssetFromSupabase(id);
           await renderAssetTable();
           document.getElementById('asset-feedback').innerHTML = 'Asset deleted successfully.';
-          setTimeout(() => { if(document.getElementById('asset-feedback')) document.getElementById('asset-feedback').innerHTML = ''; }, 2000);
+          setTimeout(() => { if (document.getElementById('asset-feedback')) document.getElementById('asset-feedback').innerHTML = ''; }, 2000);
         }
       });
     });
   }
-  
+
   // ======================= PERIOD REPORT GENERATION =======================
   async function generatePeriodReport() {
     const startDate = document.getElementById('report-start').value;
     const endDate = document.getElementById('report-end').value;
     const outputDiv = document.getElementById('report-output');
-    
+
     if (!startDate || !endDate) {
-      outputDiv.innerHTML = '<strong>⚠️ Please select both start and end dates.</strong>';
+      outputDiv.innerHTML = '<strong>Please select both start and end dates.</strong>';
       return;
     }
-    
+
     let assets = await fetchAssetsFromSupabase();
-    
-    // Filter assets by acquisition_date within range
+
     const filtered = assets.filter(asset => {
       if (!asset.acquisition_date) return false;
       return asset.acquisition_date >= startDate && asset.acquisition_date <= endDate;
     });
-    
+
     if (filtered.length === 0) {
-      outputDiv.innerHTML = `<strong>📋 Period Report: ${startDate} to ${endDate}</strong><br><br>No assets acquired during this period.`;
+      outputDiv.innerHTML = `<strong>Period Report: ${startDate} to ${endDate}</strong><br><br>No assets acquired during this period.`;
       return;
     }
-    
-    // Calculate summary statistics
+
     const totalValue = filtered.reduce((sum, a) => sum + (parseFloat(a.purchase_value) || 0), 0);
     const vehicles = filtered.filter(a => a.category === 'Vehicle').length;
     const furniture = filtered.filter(a => a.category === 'Furniture').length;
@@ -628,14 +770,14 @@
       const cond = a.condition || 'Good';
       conditionBreakdown[cond] = (conditionBreakdown[cond] || 0) + 1;
     });
-    
-    let reportHtml = `<strong>📊 ASSET REPORT: ${startDate} to ${endDate}</strong><br><br>`;
-    reportHtml += `<strong>📈 Summary Statistics:</strong><br>`;
+
+    let reportHtml = `<strong>ASSET REPORT: ${startDate} to ${endDate}</strong><br><br>`;
+    reportHtml += `<strong>Summary Statistics:</strong><br>`;
     reportHtml += `• Total Assets Acquired: ${filtered.length}<br>`;
     reportHtml += `• Total Purchase Value: $${totalValue.toFixed(2)}<br>`;
     reportHtml += `• Vehicles: ${vehicles} | Furniture: ${furniture} | Equipment: ${equipment}<br>`;
     reportHtml += `• Condition: Excellent (${conditionBreakdown.Excellent}), Good (${conditionBreakdown.Good}), Fair (${conditionBreakdown.Fair}), Poor (${conditionBreakdown.Poor})<br><br>`;
-    reportHtml += `<strong>📋 Detailed Asset List:</strong><br>`;
+    reportHtml += `<strong>Detailed Asset List:</strong><br>`;
     reportHtml += `<table style="width:100%; font-size:0.75rem; border-collapse:collapse;">`;
     reportHtml += `<tr style="background:#e6f3f5;"><th>Tag</th><th>Name</th><th>Category</th><th>Location</th><th>Value</th><th>Acquisition Date</th></tr>`;
     filtered.forEach(asset => {
@@ -650,41 +792,41 @@
     });
     reportHtml += `</table>`;
     reportHtml += `<br><small>Report generated on ${new Date().toLocaleString()} by ${currentUser?.email || 'Unknown'}</small>`;
-    
+
     outputDiv.innerHTML = reportHtml;
     return filtered;
   }
-  
+
   async function exportReportCSV() {
     const startDate = document.getElementById('report-start').value;
     const endDate = document.getElementById('report-end').value;
     let assets = await fetchAssetsFromSupabase();
     const filtered = assets.filter(a => a.acquisition_date && a.acquisition_date >= startDate && a.acquisition_date <= endDate);
-    
+
     const headers = ['asset_tag', 'asset_name', 'category', 'location', 'department', 'condition', 'custodian', 'acquisition_date', 'purchase_value', 'serial_number'];
     const rows = filtered.map(a => headers.map(h => `"${(a[h] || '').replace(/"/g, '""')}"`).join(','));
     const csv = [headers.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], {type: 'text/csv'});
+    const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `asset_report_${startDate}_to_${endDate}.csv`;
     link.click();
     URL.revokeObjectURL(link.href);
   }
-  
+
   async function exportReportJSON() {
     const startDate = document.getElementById('report-start').value;
     const endDate = document.getElementById('report-end').value;
     let assets = await fetchAssetsFromSupabase();
     const filtered = assets.filter(a => a.acquisition_date && a.acquisition_date >= startDate && a.acquisition_date <= endDate);
     const dataStr = JSON.stringify({ period: { start: startDate, end: endDate }, assets: filtered }, null, 2);
-    const blob = new Blob([dataStr], {type: 'application/json'});
+    const blob = new Blob([dataStr], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `asset_report_${startDate}_to_${endDate}.json`;
     link.click();
   }
-  
+
   function printReport() {
     const reportContent = document.getElementById('report-output').innerHTML;
     if (!reportContent || reportContent.includes('Select date range')) {
@@ -699,7 +841,7 @@
     `);
     printWindow.document.close();
   }
-  
+
   // ======================= TAB NAVIGATION =======================
   function switchTab(stepId) {
     document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active-panel'));
@@ -711,7 +853,7 @@
     });
     if (stepId === 'step-list') renderAssetTable();
   }
-  
+
   // ======================= EVENT LISTENERS =======================
   document.addEventListener('DOMContentLoaded', () => {
     // Login form
@@ -730,14 +872,58 @@
         alert(result.message || "Login failed.");
       }
     });
-    
+
     document.getElementById('logout-btn').addEventListener('click', () => {
       currentUser = null;
       updateAuthUI(null);
       switchTab('step-auth');
       alert("Logged out successfully.");
     });
-    
+
+    // Create User modal controls
+    document.getElementById('open-create-user-btn').addEventListener('click', openCreateUserModal);
+    document.getElementById('close-user-modal').addEventListener('click', closeCreateUserModal);
+    document.getElementById('cancel-create-user').addEventListener('click', closeCreateUserModal);
+
+    document.getElementById('create-user-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'create-user-modal') closeCreateUserModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('create-user-modal').classList.contains('hidden')) {
+        closeCreateUserModal();
+      }
+    });
+
+    // Create User form submission
+    document.getElementById('create-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const feedback = document.getElementById('create-user-feedback');
+
+      const newUser = {
+        full_name: document.getElementById('new-user-name').value.trim(),
+        email: document.getElementById('new-user-email').value.trim().toLowerCase(),
+        password: document.getElementById('new-user-password').value,
+        role: document.getElementById('new-user-role').value,
+      };
+
+      if (!newUser.full_name || !newUser.email || newUser.password.length < 4) {
+        feedback.innerHTML = 'Please fill all fields. Password must be at least 4 characters.';
+        return;
+      }
+
+      feedback.innerHTML = 'Creating user...';
+      const result = await createUserInSupabase(newUser);
+
+      if (result.success) {
+        feedback.innerHTML = 'User ' + newUser.email + ' created as ' + newUser.role + '. They can now log in.';
+        document.getElementById('create-user-form').reset();
+        setTimeout(closeCreateUserModal, 2500);
+      } else {
+        feedback.innerHTML = (result.message || 'Failed to create user.');
+      }
+    });
+
     // Asset registration
     const assetForm = document.getElementById('asset-form');
     assetForm.addEventListener('submit', async (e) => {
@@ -763,7 +949,7 @@
       }
       const result = await insertAssetToSupabase(assetData);
       if (result.success) {
-        document.getElementById('asset-feedback').innerHTML = '✅ Asset saved successfully!';
+        document.getElementById('asset-feedback').innerHTML = 'Asset saved successfully!';
         assetForm.reset();
         setTimeout(() => document.getElementById('asset-feedback').innerHTML = '', 3000);
         if (result.fallback) document.getElementById('asset-feedback').innerHTML += ' (local fallback mode)';
@@ -771,26 +957,25 @@
         alert("Error saving asset");
       }
     });
-    
+
     // Ledger controls
     document.getElementById('search-ledger')?.addEventListener('input', () => renderAssetTable());
     document.getElementById('filter-cat-ledger')?.addEventListener('change', () => renderAssetTable());
     document.getElementById('refresh-ledger-btn')?.addEventListener('click', () => renderAssetTable());
-    
+
     // Report controls
     document.getElementById('generate-report-btn')?.addEventListener('click', generatePeriodReport);
     document.getElementById('export-report-csv')?.addEventListener('click', exportReportCSV);
     document.getElementById('export-report-json')?.addEventListener('click', exportReportJSON);
     document.getElementById('print-report')?.addEventListener('click', printReport);
-    
+
     // Tab navigation
     document.querySelectorAll('.step-tab').forEach(tab => {
       tab.addEventListener('click', () => switchTab(tab.dataset.step));
     });
-    
+
     updateAuthUI(null);
   });
 </script>
 </body>
 </html>
-```
