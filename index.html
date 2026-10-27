@@ -233,7 +233,6 @@
       flex: 1;
     }
 
-    /* Auth actions row */
     #auth-actions {
       display: none;
       margin-top: 14px;
@@ -246,7 +245,6 @@
       min-width: 130px;
     }
 
-    /* ======================= MODAL ======================= */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -316,7 +314,6 @@
     <div class="step-tab" data-step="step-report">Period Report</div>
   </div>
 
-  <!-- PANEL 1: AUTHENTICATION -->
   <div id="step-auth" class="panel active-panel">
     <div class="card">
       <h2>Officer / Admin Login</h2>
@@ -338,7 +335,6 @@
     </div>
   </div>
 
-  <!-- PANEL 2: REGISTER ASSET -->
   <div id="step-asset" class="panel">
     <div class="card">
       <h2>Register New Council Asset</h2>
@@ -380,7 +376,6 @@
     </div>
   </div>
 
-  <!-- PANEL 3: ASSET REGISTER -->
   <div id="step-list" class="panel">
     <div class="card">
       <h2>Asset Register (Live)</h2>
@@ -408,7 +403,6 @@
     </div>
   </div>
 
-  <!-- PANEL 4: PERIOD REPORT -->
   <div id="step-report" class="panel">
     <div class="card">
       <h2>Generate Asset Report by Period</h2>
@@ -431,7 +425,6 @@
   </footer>
 </div>
 
-<!-- CREATE USER MODAL -->
 <div id="create-user-modal" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal__head">
@@ -444,7 +437,7 @@
       <label>Email Address</label>
       <input type="email" id="new-user-email" required placeholder="officer2@manyame.gov.zw" />
       <label>Password</label>
-      <input type="password" id="new-user-password" required minlength="4" placeholder="Minimum 4 characters" />
+      <input type="password" id="new-user-password" required minlength="6" placeholder="Minimum 6 characters" />
       <label>Role</label>
       <select id="new-user-role">
         <option value="officer" selected>Officer</option>
@@ -475,35 +468,31 @@
 
     if (supabaseClient) {
       try {
-        const { data, error } = await supabaseClient
-          .from('profiles')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
-
-        if (!error && data) {
-          if (password.length >= 4) {
-            return {
-              success: true,
-              user: {
-                email: data.email,
-                role: data.role || 'officer',
-                full_name: data.full_name || email.split('@')[0],
-                id: data.id
-              }
-            };
-          }
+        // Use Supabase Auth for login
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        if (data.user) {
+           return {
+             success: true,
+             user: {
+               email: data.user.email,
+               role: data.user.user_metadata?.role || 'officer',
+               full_name: data.user.user_metadata?.full_name || email.split('@')[0],
+               id: data.user.id
+             }
+           };
         }
       } catch (err) {
-        console.log("Profiles query error, using fallback", err);
+        console.log("Auth error, falling back to demo", err.message);
       }
     }
 
+    // Fallback for demo purposes if Supabase fails or is not configured
     if (email && password.length >= 4) {
       const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
       return { success: true, user: { email, role, full_name: email.split('@')[0] } };
     }
-    return { success: false, message: "Invalid credentials. Password must be 4+ chars." };
+    return { success: false, message: "Invalid credentials." };
   }
 
   function updateAuthUI(user) {
@@ -515,7 +504,9 @@
       statusDiv.innerHTML = 'Logged in as ' + user.email + ' (' + user.role + ')';
       authActions.style.display = 'flex';
       
-      // FIX: Show the Create User button to ALL logged in users, regardless of role
+      // Show to everyone logged in, or restrict if you prefer:
+      // if (user.role === 'admin') createUserBtn.style.display = 'inline-flex';
+      // else createUserBtn.style.display = 'none';
       createUserBtn.style.display = 'inline-flex';
       
     } else {
@@ -529,23 +520,28 @@
     if (!supabaseClient) return { success: false, message: "Supabase not available." };
 
     try {
-      const { data: existing } = await supabaseClient
-        .from('profiles')
-        .select('id')
-        .eq('email', newUser.email)
-        .maybeSingle();
-
-      if (existing) return { success: false, message: "A user with this email already exists." };
-
-      const { data, error } = await supabaseClient
-        .from('profiles')
-        .insert([{ email: newUser.email, full_name: newUser.full_name, role: newUser.role }])
-        .select()
-        .maybeSingle();
+      // Create user in the auth.users table using signUp
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            full_name: newUser.full_name,
+            role: newUser.role
+          }
+        }
+      });
 
       if (error) throw error;
-      return { success: true, user: data };
+      
+      // Check if user was created but needs email confirmation
+      if (data.user && !data.session) {
+         return { success: true, message: "User created! They may need to confirm their email before logging in.", user: data.user };
+      }
+
+      return { success: true, user: data.user };
     } catch (err) {
+      console.error("Create user error:", err.message);
       return { success: false, message: err.message };
     }
   }
@@ -797,7 +793,8 @@
       }
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      if (supabaseClient) await supabaseClient.auth.signOut();
       currentUser = null;
       updateAuthUI(null);
       switchTab('step-auth');
@@ -829,8 +826,8 @@
         role: document.getElementById('new-user-role').value,
       };
 
-      if (!newUser.full_name || !newUser.email || newUser.password.length < 4) {
-        feedback.innerHTML = 'Please fill all fields. Password must be 4+ chars.';
+      if (!newUser.full_name || !newUser.email || newUser.password.length < 6) {
+        feedback.innerHTML = 'Please fill all fields. Password must be 6+ chars.';
         return;
       }
 
@@ -838,9 +835,9 @@
       const result = await createUserInSupabase(newUser);
 
       if (result.success) {
-        feedback.innerHTML = 'User ' + newUser.email + ' created as ' + newUser.role + '. They can now log in.';
+        feedback.innerHTML = result.message || ('User ' + newUser.email + ' created successfully!');
         document.getElementById('create-user-form').reset();
-        setTimeout(closeCreateUserModal, 2500);
+        setTimeout(closeCreateUserModal, 3000);
       } else {
         feedback.innerHTML = (result.message || 'Failed to create user.');
       }
