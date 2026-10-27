@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Manyame RDC | Asset Register System</title>
-  <!-- Supabase JS library -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
@@ -19,7 +18,7 @@
       padding: 24px 20px;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
     }
 
@@ -105,6 +104,9 @@
     }
     button.secondary {
       background: #475569;
+    }
+    button.secondary:hover:not(:disabled) {
+      background: #334155;
     }
     .flex-btns {
       display: flex;
@@ -221,11 +223,6 @@
       font-size: 0.7rem;
       color: #5f7e8a;
     }
-    hr {
-      margin: 16px 0;
-      border: none;
-      border-top: 1px solid #dce7ec;
-    }
     .date-range {
       display: flex;
       gap: 12px;
@@ -235,10 +232,18 @@
     .date-range input {
       flex: 1;
     }
-    .report-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
+
+    /* Auth actions row */
+    #auth-actions {
+      display: none;
+      margin-top: 14px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #auth-actions button {
+      width: auto;
+      flex: 1;
+      min-width: 130px;
     }
 
     /* ======================= MODAL ======================= */
@@ -304,7 +309,6 @@
     <p>Centralised Asset Register &mdash; Digital Ledger &amp; Period Reporting</p>
   </div>
 
-  <!-- STEP NAVIGATION -->
   <div class="step-nav">
     <div class="step-tab active" data-step="step-auth">Authentication</div>
     <div class="step-tab" data-step="step-asset">Register Asset</div>
@@ -323,8 +327,12 @@
         <input id="login-password" type="password" required placeholder="Enter password" />
         <button type="submit" id="login-btn">Login &rarr;</button>
       </form>
-      <button id="logout-btn" class="secondary hidden" style="margin-top: 12px; display: none;">Logout</button>
-      <button id="open-create-user-btn" class="secondary hidden" style="margin-top: 12px; display: none;">Create User</button>
+
+      <div id="auth-actions">
+        <button id="logout-btn" class="secondary">Logout</button>
+        <button id="open-create-user-btn" class="secondary">Create User</button>
+      </div>
+
       <div id="auth-status" class="status-badge" style="margin-top: 16px;">Not logged in.</div>
       <div class="inline-note">Demo accounts: admin@manyame.gov.zw (Admin) | officer@manyame.gov.zw (Officer) | any password 4+ chars</div>
     </div>
@@ -517,22 +525,21 @@
 
   function updateAuthUI(user) {
     const statusDiv = document.getElementById('auth-status');
-    const logoutBtn = document.getElementById('logout-btn');
+    const authActions = document.getElementById('auth-actions');
     const createUserBtn = document.getElementById('open-create-user-btn');
 
     if (user) {
       statusDiv.innerHTML = 'Logged in as ' + user.email + ' (' + user.role + ')';
-      logoutBtn.style.display = 'block';
+      authActions.style.display = 'flex';
       if (user.role === 'admin') {
-        createUserBtn.style.display = 'block';
+        createUserBtn.style.display = 'inline-flex';
       } else {
         createUserBtn.style.display = 'none';
       }
       console.log('User logged in: ' + user.email + ' (' + user.role + ')');
     } else {
       statusDiv.innerHTML = 'Not logged in.';
-      logoutBtn.style.display = 'none';
-      createUserBtn.style.display = 'none';
+      authActions.style.display = 'none';
       currentUser = null;
       console.log("User logged out");
     }
@@ -725,7 +732,7 @@
     }).join('');
 
     document.querySelectorAll('.delete-asset-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', async () => {
         if (!currentUser) { alert("Login required to delete."); return; }
         const id = btn.getAttribute('data-id');
         if (confirm("Permanently delete this asset?")) {
@@ -846,136 +853,4 @@
   function switchTab(stepId) {
     document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active-panel'));
     const activePanel = document.getElementById(stepId);
-    if (activePanel) activePanel.classList.add('active-panel');
-    document.querySelectorAll('.step-tab').forEach(tab => {
-      if (tab.dataset.step === stepId) tab.classList.add('active');
-      else tab.classList.remove('active');
-    });
-    if (stepId === 'step-list') renderAssetTable();
-  }
-
-  // ======================= EVENT LISTENERS =======================
-  document.addEventListener('DOMContentLoaded', () => {
-    // Login form
-    const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const pwd = document.getElementById('login-password').value;
-      const result = await authenticateUser(email, pwd);
-      if (result.success) {
-        currentUser = result.user;
-        updateAuthUI(currentUser);
-        alert(`Welcome ${currentUser.role === 'admin' ? 'Administrator' : 'Officer'}!`);
-        switchTab('step-asset');
-      } else {
-        alert(result.message || "Login failed.");
-      }
-    });
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      currentUser = null;
-      updateAuthUI(null);
-      switchTab('step-auth');
-      alert("Logged out successfully.");
-    });
-
-    // Create User modal controls
-    document.getElementById('open-create-user-btn').addEventListener('click', openCreateUserModal);
-    document.getElementById('close-user-modal').addEventListener('click', closeCreateUserModal);
-    document.getElementById('cancel-create-user').addEventListener('click', closeCreateUserModal);
-
-    document.getElementById('create-user-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'create-user-modal') closeCreateUserModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !document.getElementById('create-user-modal').classList.contains('hidden')) {
-        closeCreateUserModal();
-      }
-    });
-
-    // Create User form submission
-    document.getElementById('create-user-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const feedback = document.getElementById('create-user-feedback');
-
-      const newUser = {
-        full_name: document.getElementById('new-user-name').value.trim(),
-        email: document.getElementById('new-user-email').value.trim().toLowerCase(),
-        password: document.getElementById('new-user-password').value,
-        role: document.getElementById('new-user-role').value,
-      };
-
-      if (!newUser.full_name || !newUser.email || newUser.password.length < 4) {
-        feedback.innerHTML = 'Please fill all fields. Password must be at least 4 characters.';
-        return;
-      }
-
-      feedback.innerHTML = 'Creating user...';
-      const result = await createUserInSupabase(newUser);
-
-      if (result.success) {
-        feedback.innerHTML = 'User ' + newUser.email + ' created as ' + newUser.role + '. They can now log in.';
-        document.getElementById('create-user-form').reset();
-        setTimeout(closeCreateUserModal, 2500);
-      } else {
-        feedback.innerHTML = (result.message || 'Failed to create user.');
-      }
-    });
-
-    // Asset registration
-    const assetForm = document.getElementById('asset-form');
-    assetForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) { alert("Please login first."); switchTab('step-auth'); return; }
-      const assetData = {
-        asset_tag: document.getElementById('asset_tag').value.trim(),
-        asset_name: document.getElementById('asset_name').value.trim(),
-        category: document.getElementById('asset_category').value,
-        location: document.getElementById('asset_location').value.trim(),
-        department: document.getElementById('asset_department').value.trim(),
-        condition: document.getElementById('asset_condition').value,
-        custodian: document.getElementById('asset_custodian').value.trim(),
-        acquisition_date: document.getElementById('asset_acquisition').value,
-        purchase_value: parseFloat(document.getElementById('asset_value').value) || null,
-        serial_number: document.getElementById('asset_serial').value.trim(),
-        notes: document.getElementById('asset_notes').value.trim(),
-        created_by: currentUser.email,
-      };
-      if (!assetData.asset_name || !assetData.category || !assetData.location || !assetData.custodian) {
-        alert("Please fill required fields: Asset name, category, location, custodian.");
-        return;
-      }
-      const result = await insertAssetToSupabase(assetData);
-      if (result.success) {
-        document.getElementById('asset-feedback').innerHTML = 'Asset saved successfully!';
-        assetForm.reset();
-        setTimeout(() => document.getElementById('asset-feedback').innerHTML = '', 3000);
-        if (result.fallback) document.getElementById('asset-feedback').innerHTML += ' (local fallback mode)';
-      } else {
-        alert("Error saving asset");
-      }
-    });
-
-    // Ledger controls
-    document.getElementById('search-ledger')?.addEventListener('input', () => renderAssetTable());
-    document.getElementById('filter-cat-ledger')?.addEventListener('change', () => renderAssetTable());
-    document.getElementById('refresh-ledger-btn')?.addEventListener('click', () => renderAssetTable());
-
-    // Report controls
-    document.getElementById('generate-report-btn')?.addEventListener('click', generatePeriodReport);
-    document.getElementById('export-report-csv')?.addEventListener('click', exportReportCSV);
-    document.getElementById('export-report-json')?.addEventListener('click', exportReportJSON);
-    document.getElementById('print-report')?.addEventListener('click', printReport);
-
-    // Tab navigation
-    document.querySelectorAll('.step-tab').forEach(tab => {
-      tab.addEventListener('click', () => switchTab(tab.dataset.step));
-    });
-
-    updateAuthUI(null);
-  });
-</script>
-</body>
-</html>
+    if (active
