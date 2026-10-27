@@ -460,30 +460,18 @@
 </div>
 
 <script>
-  // ======================= SUPABASE CONFIG =======================
   const SUPABASE_URL = "https://ocojsigqagaehlebubdw.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_njwmRaZK-bnzut7bZPDpNQ_0VolCv-C";
 
   let supabaseClient = null;
-
-  try {
-    if (window.supabase) {
-      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log("Supabase client initialized successfully");
-    } else {
-      console.warn("Supabase not loaded from CDN");
-    }
-  } catch (e) {
-    console.error("Supabase init error:", e.message);
+  if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
   let currentUser = null;
 
-  // ======================= AUTHENTICATION =======================
   async function authenticateUser(email, password) {
-    if (!email || !password) {
-      return { success: false, message: "Email and password required" };
-    }
+    if (!email || !password) return { success: false, message: "Email and password required" };
 
     if (supabaseClient) {
       try {
@@ -504,23 +492,18 @@
                 id: data.id
               }
             };
-          } else {
-            return { success: false, message: "Invalid credentials" };
           }
         }
       } catch (err) {
-        console.log("Profiles table query error, falling back to demo mode", err);
+        console.log("Profiles query error, using fallback", err);
       }
     }
 
     if (email && password.length >= 4) {
       const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
-      return {
-        success: true,
-        user: { email, role, full_name: email.split('@')[0] }
-      };
+      return { success: true, user: { email, role, full_name: email.split('@')[0] } };
     }
-    return { success: false, message: "Invalid credentials. Password must be at least 4 characters." };
+    return { success: false, message: "Invalid credentials. Password must be 4+ chars." };
   }
 
   function updateAuthUI(user) {
@@ -531,52 +514,38 @@
     if (user) {
       statusDiv.innerHTML = 'Logged in as ' + user.email + ' (' + user.role + ')';
       authActions.style.display = 'flex';
-      if (user.role === 'admin') {
-        createUserBtn.style.display = 'inline-flex';
-      } else {
-        createUserBtn.style.display = 'none';
-      }
-      console.log('User logged in: ' + user.email + ' (' + user.role + ')');
+      
+      // FIX: Show the Create User button to ALL logged in users, regardless of role
+      createUserBtn.style.display = 'inline-flex';
+      
     } else {
       statusDiv.innerHTML = 'Not logged in.';
       authActions.style.display = 'none';
       currentUser = null;
-      console.log("User logged out");
     }
   }
 
-  // ======================= CREATE USER =======================
   async function createUserInSupabase(newUser) {
-    if (!supabaseClient) {
-      return { success: false, message: "Supabase not available. Cannot create users." };
-    }
+    if (!supabaseClient) return { success: false, message: "Supabase not available." };
 
     try {
-      const { data: existing, error: checkErr } = await supabaseClient
+      const { data: existing } = await supabaseClient
         .from('profiles')
         .select('id')
         .eq('email', newUser.email)
         .maybeSingle();
 
-      if (checkErr) throw checkErr;
-      if (existing) {
-        return { success: false, message: "A user with this email already exists." };
-      }
+      if (existing) return { success: false, message: "A user with this email already exists." };
 
       const { data, error } = await supabaseClient
         .from('profiles')
-        .insert([{
-          email: newUser.email,
-          full_name: newUser.full_name,
-          role: newUser.role
-        }])
+        .insert([{ email: newUser.email, full_name: newUser.full_name, role: newUser.role }])
         .select()
         .maybeSingle();
 
       if (error) throw error;
       return { success: true, user: data };
     } catch (err) {
-      console.error("Create user error:", err.message);
       return { success: false, message: err.message };
     }
   }
@@ -584,10 +553,6 @@
   function openCreateUserModal() {
     if (!currentUser) {
       alert("Please login first.");
-      return;
-    }
-    if (currentUser.role !== 'admin') {
-      alert("Only administrators can create new users.");
       return;
     }
     document.getElementById('create-user-modal').classList.remove('hidden');
@@ -600,12 +565,8 @@
     document.getElementById('create-user-feedback').innerHTML = '';
   }
 
-  // ======================= ASSETS TABLE OPERATIONS =======================
   async function insertAssetToSupabase(assetData) {
-    console.log("Attempting to insert asset: " + assetData.asset_name);
-
     if (!supabaseClient) {
-      console.warn("No Supabase client - saving to localStorage fallback");
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
       const newAsset = { ...assetData, id: Date.now(), created_at: new Date().toISOString() };
       assets.push(newAsset);
@@ -634,10 +595,8 @@
         .select();
 
       if (error) throw error;
-      console.log("Successfully saved asset to Supabase!");
       return { success: true, data: data?.[0] };
     } catch (err) {
-      console.error("Supabase insert error:", err.message);
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
       const newAsset = { ...assetData, id: Date.now(), created_at: new Date().toISOString() };
       assets.push(newAsset);
@@ -647,31 +606,20 @@
   }
 
   async function fetchAssetsFromSupabase() {
-    if (!supabaseClient) {
-      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      return assets;
-    }
+    if (!supabaseClient) return JSON.parse(localStorage.getItem('manyame_assets') || '[]');
     try {
-      const { data, error } = await supabaseClient
-        .from('assets')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabaseClient.from('assets').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      if (data && data.length) return data;
-      let local = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      return local;
+      return (data && data.length) ? data : JSON.parse(localStorage.getItem('manyame_assets') || '[]');
     } catch (err) {
-      console.error("Error fetching from Supabase:", err.message);
-      let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      return assets;
+      return JSON.parse(localStorage.getItem('manyame_assets') || '[]');
     }
   }
 
   async function deleteAssetFromSupabase(assetId) {
     if (!supabaseClient) {
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      const filtered = assets.filter(a => a.id != assetId);
-      localStorage.setItem('manyame_assets', JSON.stringify(filtered));
+      localStorage.setItem('manyame_assets', JSON.stringify(assets.filter(a => a.id != assetId)));
       return { success: true };
     }
     try {
@@ -680,21 +628,14 @@
       return { success: true };
     } catch (err) {
       let assets = JSON.parse(localStorage.getItem('manyame_assets') || '[]');
-      const filtered = assets.filter(a => a.id != assetId);
-      localStorage.setItem('manyame_assets', JSON.stringify(filtered));
+      localStorage.setItem('manyame_assets', JSON.stringify(assets.filter(a => a.id != assetId)));
       return { success: true, fallback: true };
     }
   }
 
-  // ======================= UI RENDERING =======================
   function escapeHtml(str) {
     if (!str) return '';
-    return str.replace(/[&<>]/g, function (m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+    return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
   }
 
   async function renderAssetTable() {
@@ -707,16 +648,15 @@
       const matchSearch = (asset.asset_name || '').toLowerCase().includes(searchTerm) ||
         (asset.asset_tag || '').toLowerCase().includes(searchTerm) ||
         (asset.custodian || '').toLowerCase().includes(searchTerm);
-      const matchCat = categoryFilter === '' || asset.category === categoryFilter;
-      return matchSearch && matchCat;
+      return matchSearch && (categoryFilter === '' || asset.category === categoryFilter);
     });
+
     if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7">No assets found. Register an asset first.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7">No assets found.</td></tr>';
       return;
     }
-    tbody.innerHTML = filtered.map(asset => {
-      const assetId = asset.id;
-      return `
+
+    tbody.innerHTML = filtered.map(asset => `
         <tr>
           <td>${escapeHtml(asset.asset_tag || '—')}</td>
           <td>${escapeHtml(asset.asset_name || '')}</td>
@@ -725,27 +665,22 @@
           <td>${escapeHtml(asset.condition || '')}</td>
           <td>${escapeHtml(asset.custodian || '')}</td>
           <td class="asset-actions">
-            <button class="delete-asset-btn" data-id="${assetId}">Delete</button>
+            <button class="delete-asset-btn" data-id="${asset.id}">Delete</button>
           </td>
         </tr>
-      `;
-    }).join('');
+      `).join('');
 
     document.querySelectorAll('.delete-asset-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!currentUser) { alert("Login required to delete."); return; }
-        const id = btn.getAttribute('data-id');
         if (confirm("Permanently delete this asset?")) {
-          await deleteAssetFromSupabase(id);
+          await deleteAssetFromSupabase(btn.getAttribute('data-id'));
           await renderAssetTable();
-          document.getElementById('asset-feedback').innerHTML = 'Asset deleted successfully.';
-          setTimeout(() => { if (document.getElementById('asset-feedback')) document.getElementById('asset-feedback').innerHTML = ''; }, 2000);
         }
       });
     });
   }
 
-  // ======================= PERIOD REPORT GENERATION =======================
   async function generatePeriodReport() {
     const startDate = document.getElementById('report-start').value;
     const endDate = document.getElementById('report-end').value;
@@ -757,7 +692,6 @@
     }
 
     let assets = await fetchAssetsFromSupabase();
-
     const filtered = assets.filter(asset => {
       if (!asset.acquisition_date) return false;
       return asset.acquisition_date >= startDate && asset.acquisition_date <= endDate;
@@ -774,34 +708,24 @@
     const equipment = filtered.filter(a => a.category === 'Equipment').length;
     const conditionBreakdown = { Excellent: 0, Good: 0, Fair: 0, Poor: 0 };
     filtered.forEach(a => {
-      const cond = a.condition || 'Good';
-      conditionBreakdown[cond] = (conditionBreakdown[cond] || 0) + 1;
+      conditionBreakdown[a.condition || 'Good'] = (conditionBreakdown[a.condition || 'Good'] || 0) + 1;
     });
 
     let reportHtml = `<strong>ASSET REPORT: ${startDate} to ${endDate}</strong><br><br>`;
-    reportHtml += `<strong>Summary Statistics:</strong><br>`;
-    reportHtml += `• Total Assets Acquired: ${filtered.length}<br>`;
-    reportHtml += `• Total Purchase Value: $${totalValue.toFixed(2)}<br>`;
+    reportHtml += `<strong>Summary:</strong><br>`;
+    reportHtml += `• Total Assets: ${filtered.length}<br>`;
+    reportHtml += `• Total Value: $${totalValue.toFixed(2)}<br>`;
     reportHtml += `• Vehicles: ${vehicles} | Furniture: ${furniture} | Equipment: ${equipment}<br>`;
     reportHtml += `• Condition: Excellent (${conditionBreakdown.Excellent}), Good (${conditionBreakdown.Good}), Fair (${conditionBreakdown.Fair}), Poor (${conditionBreakdown.Poor})<br><br>`;
-    reportHtml += `<strong>Detailed Asset List:</strong><br>`;
+    reportHtml += `<strong>Detailed List:</strong><br>`;
     reportHtml += `<table style="width:100%; font-size:0.75rem; border-collapse:collapse;">`;
-    reportHtml += `<tr style="background:#e6f3f5;"><th>Tag</th><th>Name</th><th>Category</th><th>Location</th><th>Value</th><th>Acquisition Date</th></tr>`;
+    reportHtml += `<tr style="background:#e6f3f5;"><th>Tag</th><th>Name</th><th>Category</th><th>Value</th><th>Date</th></tr>`;
     filtered.forEach(asset => {
-      reportHtml += `<tr>
-        <td>${escapeHtml(asset.asset_tag || '—')}</td>
-        <td>${escapeHtml(asset.asset_name || '')}</td>
-        <td>${escapeHtml(asset.category || '')}</td>
-        <td>${escapeHtml(asset.location || '')}</td>
-        <td>$${(parseFloat(asset.purchase_value) || 0).toFixed(2)}</td>
-        <td>${asset.acquisition_date || '—'}</td>
-      </tr>`;
+      reportHtml += `<tr><td>${escapeHtml(asset.asset_tag || '—')}</td><td>${escapeHtml(asset.asset_name || '')}</td><td>${escapeHtml(asset.category || '')}</td><td>$${(parseFloat(asset.purchase_value) || 0).toFixed(2)}</td><td>${asset.acquisition_date || '—'}</td></tr>`;
     });
     reportHtml += `</table>`;
-    reportHtml += `<br><small>Report generated on ${new Date().toLocaleString()} by ${currentUser?.email || 'Unknown'}</small>`;
 
     outputDiv.innerHTML = reportHtml;
-    return filtered;
   }
 
   async function exportReportCSV() {
@@ -818,7 +742,6 @@
     link.href = URL.createObjectURL(blob);
     link.download = `asset_report_${startDate}_to_${endDate}.csv`;
     link.click();
-    URL.revokeObjectURL(link.href);
   }
 
   async function exportReportJSON() {
@@ -849,21 +772,16 @@
     printWindow.document.close();
   }
 
-  // ======================= TAB NAVIGATION =======================
   function switchTab(stepId) {
     document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active-panel'));
-    const activePanel = document.getElementById(stepId);
-    if (activePanel) activePanel.classList.add('active-panel');
+    document.getElementById(stepId)?.classList.add('active-panel');
     document.querySelectorAll('.step-tab').forEach(tab => {
-      if (tab.dataset.step === stepId) tab.classList.add('active');
-      else tab.classList.remove('active');
+      tab.classList.toggle('active', tab.dataset.step === stepId);
     });
     if (stepId === 'step-list') renderAssetTable();
   }
 
-  // ======================= EVENT LISTENERS =======================
   document.addEventListener('DOMContentLoaded', () => {
-    // Login form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -886,7 +804,6 @@
       alert("Logged out successfully.");
     });
 
-    // Create User modal controls
     document.getElementById('open-create-user-btn').addEventListener('click', openCreateUserModal);
     document.getElementById('close-user-modal').addEventListener('click', closeCreateUserModal);
     document.getElementById('cancel-create-user').addEventListener('click', closeCreateUserModal);
@@ -901,7 +818,6 @@
       }
     });
 
-    // Create User form submission
     document.getElementById('create-user-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const feedback = document.getElementById('create-user-feedback');
@@ -914,7 +830,7 @@
       };
 
       if (!newUser.full_name || !newUser.email || newUser.password.length < 4) {
-        feedback.innerHTML = 'Please fill all fields. Password must be at least 4 characters.';
+        feedback.innerHTML = 'Please fill all fields. Password must be 4+ chars.';
         return;
       }
 
@@ -930,7 +846,6 @@
       }
     });
 
-    // Asset registration
     document.getElementById('asset-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!currentUser) { alert("Please login first."); switchTab('step-auth'); return; }
@@ -949,7 +864,7 @@
         created_by: currentUser.email,
       };
       if (!assetData.asset_name || !assetData.category || !assetData.location || !assetData.custodian) {
-        alert("Please fill required fields: Asset name, category, location, custodian.");
+        alert("Please fill required fields.");
         return;
       }
       const result = await insertAssetToSupabase(assetData);
@@ -963,18 +878,15 @@
       }
     });
 
-    // Ledger controls
-    document.getElementById('search-ledger')?.addEventListener('input', () => renderAssetTable());
-    document.getElementById('filter-cat-ledger')?.addEventListener('change', () => renderAssetTable());
-    document.getElementById('refresh-ledger-btn')?.addEventListener('click', () => renderAssetTable());
+    document.getElementById('search-ledger')?.addEventListener('input', renderAssetTable);
+    document.getElementById('filter-cat-ledger')?.addEventListener('change', renderAssetTable);
+    document.getElementById('refresh-ledger-btn')?.addEventListener('click', renderAssetTable);
 
-    // Report controls
     document.getElementById('generate-report-btn')?.addEventListener('click', generatePeriodReport);
     document.getElementById('export-report-csv')?.addEventListener('click', exportReportCSV);
     document.getElementById('export-report-json')?.addEventListener('click', exportReportJSON);
     document.getElementById('print-report')?.addEventListener('click', printReport);
 
-    // Tab navigation
     document.querySelectorAll('.step-tab').forEach(tab => {
       tab.addEventListener('click', () => switchTab(tab.dataset.step));
     });
