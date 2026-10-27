@@ -319,9 +319,9 @@
       <h2>Officer / Admin Login</h2>
       <form id="login-form">
         <label>Email</label>
-        <input id="login-email" type="email" required placeholder="admin@manyame.gov.zw" />
+        <input id="login-email" type="email" required placeholder="your-email@domain.com" />
         <label>Password</label>
-        <input id="login-password" type="password" required placeholder="Enter password" />
+        <input id="login-password" type="password" required placeholder="Enter your secure password" />
         <button type="submit" id="login-btn">Login &rarr;</button>
       </form>
 
@@ -331,7 +331,7 @@
       </div>
 
       <div id="auth-status" class="status-badge" style="margin-top: 16px;">Not logged in.</div>
-      <div class="inline-note">Demo accounts: admin@manyame.gov.zw (Admin) | officer@manyame.gov.zw (Officer) | any password 4+ chars</div>
+      <div class="inline-note">Strict Authentication Enabled: Only users created in Supabase can log in.</div>
     </div>
   </div>
 
@@ -466,32 +466,32 @@
   async function authenticateUser(email, password) {
     if (!email || !password) return { success: false, message: "Email and password required" };
 
-    if (supabaseClient) {
-      try {
-        // Use Supabase Auth for login
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        if (data.user) {
-           return {
-             success: true,
-             user: {
-               email: data.user.email,
-               role: data.user.user_metadata?.role || 'officer',
-               full_name: data.user.user_metadata?.full_name || email.split('@')[0],
-               id: data.user.id
-             }
-           };
-        }
-      } catch (err) {
-        console.log("Auth error, falling back to demo", err.message);
-      }
+    if (!supabaseClient) {
+      return { success: false, message: "Supabase is not initialized." };
     }
 
-    // Fallback for demo purposes if Supabase fails or is not configured
-    if (email && password.length >= 4) {
-      const role = email.toLowerCase().includes('admin') ? 'admin' : 'officer';
-      return { success: true, user: { email, role, full_name: email.split('@')[0] } };
+    try {
+      // STRICT AUTHENTICATION: Use Supabase Auth
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+         return {
+           success: true,
+           user: {
+             email: data.user.email,
+             role: data.user.user_metadata?.role || 'officer',
+             full_name: data.user.user_metadata?.full_name || email.split('@')[0],
+             id: data.user.id
+           }
+         };
+      }
+    } catch (err) {
+      console.error("Auth error:", err.message);
+      return { success: false, message: err.message };
     }
+
     return { success: false, message: "Invalid credentials." };
   }
 
@@ -504,9 +504,7 @@
       statusDiv.innerHTML = 'Logged in as ' + user.email + ' (' + user.role + ')';
       authActions.style.display = 'flex';
       
-      // Show to everyone logged in, or restrict if you prefer:
-      // if (user.role === 'admin') createUserBtn.style.display = 'inline-flex';
-      // else createUserBtn.style.display = 'none';
+      // Show to everyone logged in
       createUserBtn.style.display = 'inline-flex';
       
     } else {
@@ -534,7 +532,6 @@
 
       if (error) throw error;
       
-      // Check if user was created but needs email confirmation
       if (data.user && !data.session) {
          return { success: true, message: "User created! They may need to confirm their email before logging in.", user: data.user };
       }
